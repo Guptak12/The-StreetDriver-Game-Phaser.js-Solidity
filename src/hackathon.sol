@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.20;
 
 import "./nft_contract.sol";
@@ -25,7 +24,7 @@ contract CarGame {
     mapping(address => uint[]) private playerSkins; // Player address to list of owned token IDs
 
     // Score milestones for NFT rewards
-    uint[] public scoreMilestones = [100, 500, 1000, 2000, 5000];
+    uint[] public scoreMilestones = [30, 50, 80, 100, 200];
 
     // Events
     event PlayerRegistered(string ign, address player);
@@ -69,33 +68,45 @@ contract CarGame {
         player.latestScore = finalScore;
         emit LatestScoreUpdated(msg.sender, finalScore);
         
-        updateHighestScore(finalScore);
     }
 
     // Update the player's highest score and reward NFTs if milestones are reached
-    function updateHighestScore(uint finalScore) internal returns (uint) {
+    function updateHighestScore(uint finalScore) internal {
         uint playerIndex = getPlayerIndex(msg.sender);
         Player storage player = listOfPlayers[playerIndex];
 
-        uint nftCount = 0; // Counter for NFTs earned
-
         // Check if the final score is higher than the current highest score
         if (finalScore > player.highestScore) {
-            uint previousHighScore = player.highestScore;
             player.highestScore = finalScore;
             emit HighestScoreUpdated(msg.sender, finalScore);
+            }
+    }
+     // Check if the latest score is greater than the highest score
+    function isNewHighScore(uint latestScore) public view returns (bool) {
+        uint playerIndex = getPlayerIndex(msg.sender);
+        Player storage player = listOfPlayers[playerIndex];
+        return latestScore > player.highestScore;
 
-            // Reward NFTs for reaching new milestones
-            for (uint i = 0; i < scoreMilestones.length; i++) {
-                if (finalScore >= scoreMilestones[i] && previousHighScore < scoreMilestones[i]) {
-                    // Mint NFT as a reward
-                    uint tokenId = mintNFTReward(msg.sender, scoreMilestones[i]);
-                    emit NFTRewarded(msg.sender, tokenId, scoreMilestones[i]);
-                    nftCount++; // Increment NFT count
-                }
+    }
+
+    function mintEligibleNFT() public {
+        uint playerIndex = getPlayerIndex(msg.sender);
+        Player storage player = listOfPlayers[playerIndex];
+        uint prevHighScore = player.highestScore;
+        uint newScore = player.latestScore;
+        updateHighestScore(player.latestScore);
+        for (uint i = 0; i < scoreMilestones.length; i++) {
+            uint milestone = scoreMilestones[i];
+            
+            // Mint NFT for milestones between previous and new score
+            if (milestone > prevHighScore && milestone <= newScore) {
+                uint tokenId = mintNFTReward(msg.sender, milestone);
+                emit NFTRewarded(msg.sender, tokenId, milestone);
             }
         }
-        return nftCount;
+        
+        // Update the highest score
+        player.highestScore = newScore;
     }
 
     // Mint NFT as a reward for reaching a milestone
@@ -115,11 +126,11 @@ contract CarGame {
 
     // Get IPFS URI for a milestone (replace with your logic)
     function getTokenURIForMilestone(uint milestone) internal pure returns (string memory) {
-        if (milestone == 100) return "https://ipfs.io/ipfs/Qmay4uxsALQMYeB24AppfCP6unevsyZRkw17vLm3tmPzXN";
-        if (milestone == 500) return "https://ipfs.io/ipfs/QmZBeUGTenuZXWfJwWdt7FZfLJqqVQq6C2wWqzFTvm1fqh";
-        if (milestone == 1000) return "https://ipfs.io/ipfs/QmYkHBd8RQU48QX3W1g6GPijumrZvVBZzJTkkKJnRpAECB";
-        if (milestone == 2000) return "https://ipfs.io/ipfs/QmT4fxrE1AKCbtjPLRnCHUjesB3FpP3daM8czMGDfjZGuG";
-        if (milestone == 5000) return "https://ipfs.io/ipfs/Qmcbxq2Yz24WmEuWzx8EBrcuEAbmBXm8HqcyVvka6wkvCr";
+        if (milestone == 30) return "https://ipfs.io/ipfs/Qmay4uxsALQMYeB24AppfCP6unevsyZRkw17vLm3tmPzXN";
+        if (milestone == 50) return "https://ipfs.io/ipfs/QmZBeUGTenuZXWfJwWdt7FZfLJqqVQq6C2wWqzFTvm1fqh";
+        if (milestone == 80) return "https://ipfs.io/ipfs/QmYkHBd8RQU48QX3W1g6GPijumrZvVBZzJTkkKJnRpAECB";
+        if (milestone == 100) return "https://ipfs.io/ipfs/QmT4fxrE1AKCbtjPLRnCHUjesB3FpP3daM8czMGDfjZGuG";
+        if (milestone == 200) return "https://ipfs.io/ipfs/Qmcbxq2Yz24WmEuWzx8EBrcuEAbmBXm8HqcyVvka6wkvCr";
         return "";
     }
 

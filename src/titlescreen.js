@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import backgroundImage from './endlessgame.jpeg';
+import backgroundImage from './background1.jpg';
 
 
 import { submitPlayerData,connectWallet } from './app'; 
@@ -8,11 +8,11 @@ export default class TitleScreen extends Phaser.Scene {
         super({ key: 'TitleScreen' });
     }
 
-    async PlayerData(name){
-        alert("Adding player to blockchain...");
-        submitPlayerData(name);
+    // async PlayerData(name){
+    //     alert("Adding player to blockchain...");
+    //     submitPlayerData(name);
 
-    }
+    // }
 
     preload() {
         this.load.image('background', backgroundImage);
@@ -20,10 +20,10 @@ export default class TitleScreen extends Phaser.Scene {
 
     create() {
         // Add background
-        this.add.image(360, 375, 'background').setOrigin(0.5).setScale(3);
+        this.add.image(720, 750, 'background').setOrigin(0.5).setScale(3);
 
         // Add title text
-        this.add.text(360, 100, 'Endless Car Game', { fontSize: '48px', fill: '#fff' }).setOrigin(0.5);
+        this.add.text(300, 85, 'Endless Car Game', { fontSize: '48px', fill: '#000' }).setOrigin(0.5);
 
         // Create input fields below the image
         this.createInputFields();
@@ -54,73 +54,42 @@ export default class TitleScreen extends Phaser.Scene {
         this.usernameInput.addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
                 const username = this.usernameInput.value.trim();
-                connectWallet();
-        this.PlayerData(username);
+        const wallet = localStorage.getItem('wallet'); // Get MetaMask wallet address
+        submitPlayerData(username);
+        connectWallet();
         if (username === '' || !wallet) {
             alert('Please enter username and connect MetaMask!');
             return;
         }
 
         // Store in local storage
-        // localStorage.setItem('userId', username);
+        localStorage.setItem('userId', username);
 
         // Remove input fields after submission
         document.body.removeChild(this.usernameInput);
         // document.body.removeChild(this.metaMaskButton);
 
+
         // Start car selection screen
         this.scene.start('CarSelectionScreen');
-                // this.connectMetaMask(); // Try connecting MetaMask after username input
             }
         });
     }
-
-    // async connectMetaMask() {
-    //     connectWallet();
+    // joinlobby(){
+    //     // create the lobby 
+    //     this.joinlobby = this.add.text(360, 400, 'Join Lobby', { fontSize: '32px', fill: '#000' })
+    //         .setOrigin(0.5)
+    //         .setInteractive();
+    //     this.joinlobby.on('pointerdown', this.joinlobby, this);
     // }
-    // createMetaMaskButton() {
-    //     // Create Connect MetaMask Button
-    //     this.metaMaskButton = document.createElement('button');
-    //     this.metaMaskButton.innerText = 'Connect MetaMask';
-    //     this.metaMaskButton.style.position = 'absolute';
-    //     this.metaMaskButton.style.left = '50%';
-    //     this.metaMaskButton.style.top = '500px';  // Below username input
-    //     this.metaMaskButton.style.width = '200px';
-    //     this.metaMaskButton.style.height = '40px';
-    //     this.metaMaskButton.style.fontSize = '18px';
-    //     this.metaMaskButton.style.transform = 'translateX(-50%)';
-    //     this.metaMaskButton.style.cursor = 'pointer';
-    //     document.body.appendChild(this.metaMaskButton);
-
-    //     // Connect to MetaMask on click
-    //     this.metaMaskButton.addEventListener('click', () => this.connectMetaMask());
+    // joinlobby(){
+    
     // }
 
-    // async connectMetaMask() {
-    //     if (window.ethereum) {
-    //         try {
-    //             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    //             const walletAddress = accounts[0];
-    //             alert(walletAddress);
-    //             // Store in local storage
-    //             localStorage.setItem('wallet', walletAddress);
-
-    //             // Update button text to show wallet address
-    //             this.metaMaskButton.innerText = `Connected: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
-    //             this.metaMaskButton.disabled = true;
-
-    //         } catch (error) {
-    //             alert('MetaMask connection failed. Please try again.');
-    //             console.error(error);
-    //         }
-    //     } else {
-    //         alert('MetaMask not found. Please install MetaMask.');
-    //     }
-    // }
-
+ 
     createSubmitButton() {
         // Create Submit Button
-        this.submitButton = this.add.text(360, 580, 'Submit', { fontSize: '32px', fill: '#0f0' })
+        this.submitButton = this.add.text(360, 580, 'Submit', { fontSize: '32px', fill: '#000' })
             .setOrigin(0.5)
             .setInteractive();
         
@@ -131,7 +100,7 @@ export default class TitleScreen extends Phaser.Scene {
     submitForm() {
         const username = this.usernameInput.value.trim();
         const wallet = localStorage.getItem('wallet'); // Get MetaMask wallet address
-        this.PlayerData(username);
+        submitPlayerData(username);
         connectWallet();
         if (username === '' || !wallet) {
             alert('Please enter username and connect MetaMask!');

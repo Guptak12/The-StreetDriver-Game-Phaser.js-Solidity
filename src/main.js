@@ -15,6 +15,8 @@ import obstacleCar1 from './assets/Cars/traffic (1).png';
 import obstacleCar2 from './assets/Cars/traffic (2).png';
 import obstacleCar3 from './assets/Cars/traffic (3).png';
 import obstacleCar4 from './assets/Cars/traffic (4).png';
+import speedup  from './assets/Cars/speedup.jpg';
+import speeddown  from './assets/Cars/speeddown.jpg';
 
 class MainGameScene extends Phaser.Scene {
     constructor() {
@@ -88,7 +90,20 @@ class MainGameScene extends Phaser.Scene {
             loop: true
         });
 
+
+        // this.time.addEvent({
+        //     delay: 10000, // Spawn a perk every 10 seconds
+        //     callback: this.Gameperks,
+        //     callbackScope: this,
+        //     loop: true
+        // });
+
+
+ 
+
+        //this.physics.add.overlap(this.playerCar, this.perks, this.collectPerk, null, this);
         this.physics.add.overlap(this.playerCar, this.obstacles, this.gameOver, null, this);
+        
     }
 
     update() {
@@ -102,9 +117,51 @@ class MainGameScene extends Phaser.Scene {
         // Clamp player car's X position to prevent it from going off-road
         this.playerCar.x = Phaser.Math.Clamp(this.playerCar.x, 110, 600);
     }
+    Gameperks() {
+        let lanes = [150, 290, 430, 570];
+        let xPosition = Phaser.Utils.Array.GetRandom(lanes); // Random lane
+        let perkType = Phaser.Math.Between(1, 2); // 1 = Speed Up, 2 = Slow Down
+    
+        let perkKey = (perkType === 1) ? speedup : speeddown; // Select texture
+        let perk = this.perks.create(xPosition, -50, perkKey).setScale(1.5);
+    
+        // Set physics properties
+        perk.setVelocityY(200);  // Make it fall down
+        perk.setActive(true);
+        perk.setVisible(true);
+        perk.body.setAllowGravity(false);
+    
+        // Remove if not collected
+        this.time.addEvent({
+            delay: 5000,
+            callback: () => {
+                if (perk.active) {
+                    perk.destroy();
+                }
+            },
+            callbackScope: this
+        });
+    }
+    
+    collectPerk( perk) {
+        if (perk.texture.key === 'speedup') {
+            this.playerSpeed += 300;  // Increase speed
+            this.time.delayedCall(5000, () => {
+                this.playerSpeed -= 200;  // Reset after 5 sec
+            });
+        } else if (perk.texture.key === 'speeddown') {
+            this.playerSpeed -= 300;  // Decrease speed
+            this.time.delayedCall(5000, () => {
+                this.playerSpeed += 300;  // Reset after 5 sec
+            });
+        }
+        
+        perk.destroy();  // Remove collected perk
+    }
+    
 
     spawnObstacle() {
-        let lanes = [170, 290, 410, 530];
+        let lanes = [150, 290, 430, 570];
         Phaser.Utils.Array.Shuffle(lanes); // Shuffle lanes for random spawning
     
         let numObstacles = Phaser.Math.Between(1, 2);  // Start with 1 or 2 obstacles
@@ -117,10 +174,10 @@ class MainGameScene extends Phaser.Scene {
     
         for (let i = 0; i < numObstacles; i++) {
             this.time.addEvent({
-                delay: i * 300,  // Stagger obstacle spawn
+                delay: i * 400,  // Stagger obstacle spawn
                 callback: () => {
                     let xPosition = lanes[i];
-                    let obstacleType = Phaser.Math.Between(1, 2);  // Initially spawn only car types 1 and 2
+                    let obstacleType = Phaser.Math.Between(1, 4);  // Initially spawn only car types 1 and 2
                     let obstacle = this.obstacles.create(xPosition, -50, `obstacle${obstacleType}`).setScale(2);
                     obstacle.setVelocityY(200 + (this.score / 10));  // Increase speed based on score
                     obstacle.setActive(true);
@@ -129,7 +186,7 @@ class MainGameScene extends Phaser.Scene {
     
                     // Remove obstacle after 5 seconds
                     this.time.addEvent({
-                        delay: 5000,
+                        delay: 6000,
                         callback: () => {
                             obstacle.destroy();
                             this.score += 4;  // Increase score when an obstacle is avoided
@@ -163,25 +220,7 @@ class MainGameScene extends Phaser.Scene {
             { playerId: 'Player3', score: 160 },
         ];
     }
-    // async CurrentScore(t) {
-    //     const tx = latestScore(t);
-    //     await tx;
-    // }
-    // gameOver() {
-    //     this.physics.pause();
-    //     // this.CurrentScore(this.score);
-
-    //     if (latestScore(this.score)) {
-
-    //         mintNFT();
-    //         // location.reload();
-    //     }
-    //     else{
-    //         alert("You did not beat the high score");
-    //         location.reload();
-    //     }
-        
-    // }
+     
     
         async gameOver() {
             this.game.pause();
