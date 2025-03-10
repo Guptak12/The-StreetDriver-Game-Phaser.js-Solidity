@@ -3,9 +3,9 @@ import { isNewHighScore,mintNFT,latestScore } from './app.js';
 import Phaser from 'phaser';
 import TitleScreen from './titlescreen.js';
 import CarSelectionScreen from './carSelectionScreen.js';
+import crash from './assets/crash.mp3'
 
-// import {latestScore} from './App.js';
-// Import images
+
 import myImageUrl from './assets/Roads/road1.png';
 import myImageUrl2 from './assets/Roads/road2.png';
 import myImageUrl3 from './assets/Roads/road3.png';
@@ -57,30 +57,11 @@ class MainGameScene extends Phaser.Scene {
 
         this.scoreText = this.add.text(20, 20, `Score: ${this.score}`, { fontSize: '32px', fill: '#fff' });
 
-        // Create a fixed side panel for the leaderboard
-        this.add.rectangle(800, 0, 200, this.game.config.height, 0x000000).setOrigin(0, 0); // Dark background for the panel
-        this.add.text(820, 20, 'Leaderboard', { font: '24px Arial', fill: '#fff' });
-
-        // Create a placeholder for the leaderboard
-        this.leaderboardText = this.add.text(820, 60, 'Loading leaderboard...', { font: '18px Arial', fill: '#fff' });
-
-        // Fetch leaderboard data from blockchain
-        this.getLeaderboardData().then(data => {
-            this.leaderboardData = data;
-            this.updateLeaderboardDisplay();
-        });
-
-        // Refresh the leaderboard every 30 seconds
-        this.time.addEvent({
-            delay: 30000, // Update every 30 seconds
-            callback: () => {
-                this.getLeaderboardData().then(data => {
-                    this.leaderboardData = data;
-                    this.updateLeaderboardDisplay();
-                });
-            },
-            loop: true
-        });
+    
+        
+        
+            
+        
 
         // Spawn obstacles and check for collision
         this.time.addEvent({
@@ -91,22 +72,12 @@ class MainGameScene extends Phaser.Scene {
         });
 
 
-        // this.time.addEvent({
-        //     delay: 10000, // Spawn a perk every 10 seconds
-        //     callback: this.Gameperks,
-        //     callbackScope: this,
-        //     loop: true
-        // });
-
-
- 
-
-        //this.physics.add.overlap(this.playerCar, this.perks, this.collectPerk, null, this);
         this.physics.add.overlap(this.playerCar, this.obstacles, this.gameOver, null, this);
         
     }
 
     update() {
+        
         this.Roads.tilePositionY -= 2;  // Move the road background
 
         this.playerCar.setVelocityX(0);
@@ -116,47 +87,6 @@ class MainGameScene extends Phaser.Scene {
 
         // Clamp player car's X position to prevent it from going off-road
         this.playerCar.x = Phaser.Math.Clamp(this.playerCar.x, 110, 600);
-    }
-    Gameperks() {
-        let lanes = [150, 290, 430, 570];
-        let xPosition = Phaser.Utils.Array.GetRandom(lanes); // Random lane
-        let perkType = Phaser.Math.Between(1, 2); // 1 = Speed Up, 2 = Slow Down
-    
-        let perkKey = (perkType === 1) ? speedup : speeddown; // Select texture
-        let perk = this.perks.create(xPosition, -50, perkKey).setScale(1.5);
-    
-        // Set physics properties
-        perk.setVelocityY(200);  // Make it fall down
-        perk.setActive(true);
-        perk.setVisible(true);
-        perk.body.setAllowGravity(false);
-    
-        // Remove if not collected
-        this.time.addEvent({
-            delay: 5000,
-            callback: () => {
-                if (perk.active) {
-                    perk.destroy();
-                }
-            },
-            callbackScope: this
-        });
-    }
-    
-    collectPerk( perk) {
-        if (perk.texture.key === 'speedup') {
-            this.playerSpeed += 300;  // Increase speed
-            this.time.delayedCall(5000, () => {
-                this.playerSpeed -= 200;  // Reset after 5 sec
-            });
-        } else if (perk.texture.key === 'speeddown') {
-            this.playerSpeed -= 300;  // Decrease speed
-            this.time.delayedCall(5000, () => {
-                this.playerSpeed += 300;  // Reset after 5 sec
-            });
-        }
-        
-        perk.destroy();  // Remove collected perk
     }
     
 
@@ -200,31 +130,12 @@ class MainGameScene extends Phaser.Scene {
         }
     }
 
-    // Function to update the leaderboard text
-    updateLeaderboardDisplay() {
-        let leaderboardText = 'Leaderboard:\n';
-        this.leaderboardData.forEach((entry, index) => {
-            leaderboardText += `${index + 1}. ${entry.playerId} - ${entry.score}\n`;
-        });
-
-        this.leaderboardText.setText(leaderboardText);
-    }
-
-    // Placeholder for leaderboard data fetching (needs actual implementation)
-    async getLeaderboardData() {
-        // Fetch the leaderboard data from your blockchain or API here
-        // Example: returning a static leaderboard for now
-        return [
-            { playerId: 'Player1', score: 200 },
-            { playerId: 'Player2', score: 180 },
-            { playerId: 'Player3', score: 160 },
-        ];
-    }
-     
+      
     
         async gameOver() {
             this.game.pause();
-            alert("Game Over! Your score: " + this.score);
+            let crash_sound = new Audio(crash)
+            crash_sound.play();
             
             try {
                 // Update latest score and wait for confirmation
@@ -253,7 +164,7 @@ class MainGameScene extends Phaser.Scene {
         }
     
     
-// Function to handle updating the latest scor
+  
 }
 
 
