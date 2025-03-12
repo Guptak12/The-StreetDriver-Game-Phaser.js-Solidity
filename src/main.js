@@ -253,7 +253,7 @@ class MainGameScene extends Phaser.Scene {
         }
     
     
-    // Function to handle updating the latest scor
+// Function to handle updating the latest scor
 }
 
 
